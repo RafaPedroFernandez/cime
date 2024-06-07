@@ -182,7 +182,10 @@ contains
     integer :: i, j, k
 
     type(shr_exp_item_t), pointer :: items_list, item
+!rpf_CESM2_SLH
     character(len=12) :: token   ! megan field name to add
+!   character(len=8)  :: token   ! rpf: in cesm1 the string length was too long if using 8 characters and the cpl crashes due to drydep_list cutoff
+!rpf_CESM2_SLH
 
     nullify(shr_megan_linkedlist)
 
@@ -231,7 +234,10 @@ contains
     if (associated(items_list)) call shr_exp_list_destroy(items_list)
 
     ! Need to explicitly add Fl_ based on naming convention
+!rpf_CESM2_SLH
 333 format ('Fall_voc',i3.3)
+! 333 format ('Fall_m',i2.2) ! rpf: in cesm1 the string length was too long if using 8 characters and the cpl crashes due to drydep_list cutoff
+!rpf_CESM2_SLH
 
   end subroutine shr_megan_init
 

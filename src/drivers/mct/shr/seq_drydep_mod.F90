@@ -12,6 +12,8 @@ module seq_drydep_mod
   !     2009-Feb-20 - E. Kluzek - Put _r8 on all constants, remove namelist read out.
   !     2009-Mar-23 - F. Vitt - Some corrections/cleanup and addition of drydep_method.
   !     2009-Mar-27 - E. Kluzek - Get description and units from J.F. Lamarque.
+  !     2018-Apr-02 - S. Wang - add VSL chemistry (from D. Kinnison)
+  !     2020-Dec-08 - R. Fernandez - Merge vsl03 chemistry (AC2-CSIC-Madrid - A. Saiz-Lopez) ! rpf_CESM2_SLH
   !========================================================================
 
   ! !USES:
@@ -36,7 +38,8 @@ module seq_drydep_mod
   ! !PRIVATE ARRAY SIZES
 
   integer, private, parameter :: maxspc = 210              ! Maximum number of species
-  integer, public,  parameter :: n_species_table = 192      ! Number of species to work with
+! integer, public,  parameter :: n_species_table = 192     ! Number of species to work with
+  integer, public,  parameter :: n_species_table = 215     ! rpf_CESM2_SLH - Add SLH (nat + ant)
   integer, private, parameter :: NSeas = 5                 ! Number of seasons
   integer, private, parameter :: NLUse = 11                ! Number of land-use types
 
@@ -280,6 +283,31 @@ module seq_drydep_mod
        ,1.e-36_r8 & ! HCN
        ,1.e-36_r8 & ! CH3CN
        ,1.e-36_r8 & ! SO2
+!rpf_CESM2_SLH
+       ,1.e-36_r8 & ! CLONO2
+       ,1.e-36_r8 & ! BRONO2
+       ,1.e-36_r8 & ! HCL
+       ,1.e-36_r8 & ! HOCL
+       ,1.e-36_r8 & ! HOBR
+       ,1.e-36_r8 & ! HBR
+       ,1.e-36_r8 & ! BRCL
+       ,1.e-36_r8 & ! IBR
+       ,1.e-36_r8 & ! ICL
+       ,1.e-36_r8 & ! BRNO2
+       ,1.e-36_r8 & ! CLNO2
+       ,1.e-36_r8 & ! HI
+       ,1.e-36_r8 & ! HOI
+       ,1.e-36_r8 & ! IONO2
+       ,1.e-36_r8 & ! INO2
+       ,1.e-36_r8 & ! BR2
+       ,1.e-36_r8 & ! IO
+       ,1.e-36_r8 & ! OIO
+       ,1.e-36_r8 & ! I2O2
+       ,1.e-36_r8 & ! I2O3
+       ,1.e-36_r8 & ! I2O4
+       ,1.e-36_r8 & ! CHCL2O2
+       ,1.e-36_r8 & ! COCL2
+!rpf_CESM2_SLH
        ,0.1_r8    & ! SOAGff0
        ,0.1_r8    & ! SOAGff1
        ,0.1_r8    & ! SOAGff2
@@ -489,6 +517,31 @@ module seq_drydep_mod
          ,'HCN      ' &
          ,'CH3CN    ' &
          ,'SO2      ' &
+!rpf_CESM2_SLH
+       ,'CLONO2  '                       &  
+       ,'BRONO2  '                       &
+       ,'HCL     '                       &
+       ,'HOCL    '                       &
+       ,'HOBR    '                       &
+       ,'HBR     '                       &
+       ,'BRCL    '                       &
+       ,'IBR     '                       &
+       ,'ICL     '                       &
+       ,'BRNO2   '                       &
+       ,'CLNO2   '                       &
+       ,'HI      '                       &
+       ,'HOI     '                       &
+       ,'IONO2   '                       &
+       ,'INO2    '                       &
+       ,'BR2     '                       &
+       ,'IO      '                       &
+       ,'OIO     '                       &
+       ,'I2O2    '                       &
+       ,'I2O3    '                       &
+       ,'I2O4    '                       &
+       ,'CHCL2O2 '                       &
+       ,'COCL2   '                       &
+!rpf_CESM2_SLH
          ,'SOAGff0  ' &
          ,'SOAGff1  ' &
          ,'SOAGff2  ' &
@@ -685,6 +738,31 @@ module seq_drydep_mod
        ,9.02e+00_r8, 8258._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  & ! HCN
        ,5.28e+01_r8, 3970._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  & ! CH3CN
        ,1.36e+00_r8, 3100._r8,1.30e-02_r8,1960._r8,6.6e-08_r8, 1500._r8  & ! SO2
+!rpf_CESM2_SLH
+       ,1.00e+06_r8,    0._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  clono2
+       ,1.00e+06_r8,    0._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  brono2
+       ,1.54e+00_r8, 9000._r8,1.3e+06_r8,    0._r8,0._r8     ,    0._r8  &  !  hcl
+       ,9.30e+02_r8,    0._r8,3.0e-08_r8,    0._r8,0._r8     ,    0._r8  &  !  hocl
+       ,1.90e+03_r8,    0._r8,2.3e-09_r8,    0._r8,0._r8     ,    0._r8  &  !  hobr
+       ,0.72e+00_r8, 6100._r8,1.0e+09_r8,    0._r8,0._r8     ,    0._r8  &  !  hbr
+       ,0.94e+00_r8, 5600._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  brcl
+       ,2.40e+01_r8,    0._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  ibr
+       ,1.10e+02_r8,    0._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  icl
+       ,0.30e+00_r8,    0._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  brno2
+       ,3.50e-02_r8,    0._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  clno2
+       ,0.78e+00_r8, 9800._r8,3.2e+09_r8,    0._r8,0._r8     ,    0._r8  &  !  hi
+       ,1.90e+03_r8,    0._r8,1.0e-10_r8,    0._r8,0._r8     ,    0._r8  &  !  hoi
+       ,1.00e+06_r8,    0._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  iono2
+       ,0.30e+00_r8,    0._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  ino2
+       ,0.76e+00_r8, 4100._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  br2
+       ,4.50e+02_r8,    0._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  io
+       ,1.00e+04_r8,    0._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  oio
+       ,1.00e+04_r8,    0._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  i2o2
+       ,1.00e+04_r8,    0._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  i2o3
+       ,1.00e+04_r8,    0._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  i2o4
+       ,1.70e-03_r8, 4100._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  chcl2o2
+       ,5.90e-04_r8, 3800._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  &  !  cocl2
+!rpf_CESM2_SLH
        ,1.3e+07_r8,     0._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  & ! SOAGff0
        ,3.2e+05_r8,     0._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  & ! SOAGff1
        ,4.0e+05_r8,     0._r8,0._r8     ,    0._r8,0._r8     ,    0._r8  & ! SOAGff2 
@@ -836,7 +914,18 @@ module seq_drydep_mod
        58.0768013_r8, 76.0910034_r8, 89.070126_r8,  90.078067_r8,  222.000000_r8, &
        68.1141968_r8, 70.0877991_r8, 70.0877991_r8, 46.0657997_r8, 147.125946_r8, &
        119.074341_r8, 162.117935_r8, 100.112999_r8, 27.0256_r8   , 41.0524_r8   , &
-       64.064800_r8,  250._r8,       250._r8,       250._r8,       250._r8,       &
+!rpf_CESM2_SLH
+!      64.064800_r8,  250._r8,       250._r8,       250._r8,       250._r8,       &
+       64.064800_r8,                                                              &    ! SO2
+       97.4579000_r8, 141.908900_r8, 36.4609400_r8, 52.4603400_r8,                &    ! CLONO2,BRONO2,HCL,HOCL,
+       96.9113400_r8, 80.9119400_r8, 115.357000_r8, 206.808470_r8, 162.357470_r8, &    ! HOBR,HBR,BRCL,IBR,ICL,
+       125.909500_r8, 81.4585000_r8, 127.912410_r8, 143.911810_r8, 188.909370_r8, &    ! BRNO2,CLNO2,HI,HOI,IONO2
+                                        172.909970_r8,                            &    ! INO2.
+                                                                   159.808000_r8, &    ! BR2
+       142.903870_r8, 158.903270_r8, 285.807740_r8, 301.807140_r8, 317.806540_r8, &    ! IO,OIO,I2O2,I2O3,I2O4
+       115.920000_r8, 95.920000_r8,                                               &    ! CHCL2O2, COCL2
+                      250._r8,       250._r8,       250._r8,       250._r8,       &    ! SOAGff0,SOAGff1,SOAGff2,SOAGff3,
+!rpf_CESM2_SLH
        250._r8,       250._r8,       250._r8,       250._r8,       250._r8,       &
        250._r8,       250._r8,       250._r8,       250._r8,       250._r8,       &
        250._r8,       170.3_r8,      170.3_r8,      170.3_r8,       170.3_r8,     &
@@ -898,7 +987,10 @@ CONTAINS
     integer :: unitn            ! namelist unit number
     integer :: ierr             ! error code
     logical :: exists           ! if file exists or not
+!rpf_CESM2_SLH
     character(len=8) :: token   ! dry dep field name to add
+!   character(len=5) :: token   ! rpf: in cesm1 the string length was too long if using 8 characters and the cpl crashes due to drydep_list cutoff
+!rpf_CESM2_SLH
     integer :: mpicom           ! MPI communicator
 
     !----- formats -----
@@ -984,7 +1076,10 @@ CONTAINS
     endif
 
     ! Need to explicitly add Sl_ based on naming convention
+!rpf_CESM2_SLH
 333 format ('Sl_dd',i3.3)
+! 333 format ('Sdv',i2.2) ! rpf: in cesm1 the string length was too long if using 8 characters and the cpl crashes due to drydep_list cutoff
+!rpf_CESM2_SLH
 
   end subroutine seq_drydep_readnl
 
@@ -1065,6 +1160,10 @@ CONTAINS
              test_name = 'OX'  ! this is just a place holder. values are explicitly set below
           case( 'SOAM', 'SOAI', 'SOAT', 'SOAB', 'SOAX' )
              test_name = 'OX'  ! this is just a place holder. values are explicitly set below
+!rpf_CESM2_SLH
+          case( 'HCL','HOCL','CLONO2','HBR','HOBR','BRONO2','HI','HOI','IONO2','INO2','I2O2','I2O3','I2O4','BR2','CHCL2O2','COCL2' )
+             test_name = 'OX'  ! This is just a place holder. Dry deposition velocities are explicitly set in 'mo_drydep'.
+!rpf_CESM2_SLH
           case( 'SOAGbb0' )
              test_name = 'SOAGff0'
           case( 'SOAGbb1' )
